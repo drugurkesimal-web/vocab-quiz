@@ -1,0 +1,226 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Kelime Quiz</title>
+  <style>
+    body {
+      font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      background: #f3f4f6;
+      margin: 0;
+      padding: 0;
+      display: flex;
+      justify-content: center;
+    }
+
+    .container {
+      max-width: 600px;
+      width: 100%;
+      padding: 16px;
+      margin: 16px;
+      background: #ffffff;
+      border-radius: 12px;
+      box-shadow: 0 4px 16px rgba(0,0,0,0.08);
+    }
+
+    h1 {
+      font-size: 22px;
+      margin-top: 0;
+      margin-bottom: 8px;
+      text-align: center;
+    }
+
+    .subtitle {
+      font-size: 13px;
+      color: #6b7280;
+      text-align: center;
+      margin-bottom: 16px;
+    }
+
+    .stats {
+      display: flex;
+      justify-content: space-between;
+      font-size: 13px;
+      margin-bottom: 12px;
+      background: #f9fafb;
+      padding: 8px 10px;
+      border-radius: 8px;
+    }
+
+    .badge {
+      display: inline-block;
+      font-size: 11px;
+      padding: 2px 6px;
+      border-radius: 999px;
+      background: #e5e7eb;
+      margin-left: 4px;
+    }
+
+    .question-box {
+      background: #eff6ff;
+      border-radius: 12px;
+      padding: 16px;
+      margin-bottom: 16px;
+    }
+
+    .question-label {
+      font-size: 13px;
+      color: #1f2937;
+      margin-bottom: 6px;
+    }
+
+    .question-text {
+      font-size: 20px;
+      font-weight: 600;
+      color: #111827;
+    }
+
+    .buttons {
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+      margin: 12px 0;
+    }
+
+    .answer-btn {
+      border: 1px solid #d1d5db;
+      border-radius: 999px;
+      padding: 10px 12px;
+      background: #ffffff;
+      text-align: left;
+      font-size: 14px;
+      cursor: pointer;
+      transition: background 0.15s, transform 0.05s, box-shadow 0.1s;
+    }
+
+    .answer-btn:hover:not(.disabled) {
+      transform: translateY(-1px);
+      box-shadow: 0 2px 6px rgba(0,0,0,0.05);
+    }
+
+    .answer-btn.correct {
+      background: #dcfce7;
+      border-color: #22c55e;
+    }
+
+    .answer-btn.wrong {
+      background: #fee2e2;
+      border-color: #ef4444;
+    }
+
+    .answer-btn.disabled {
+      opacity: 0.7;
+      cursor: default;
+      box-shadow: none;
+      transform: none;
+    }
+
+    .controls {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 6px;
+      margin-top: 8px;
+    }
+
+    .btn {
+      border-radius: 999px;
+      border: 1px solid #d1d5db;
+      background: #f3f4f6;
+      padding: 6px 10px;
+      font-size: 12px;
+      cursor: pointer;
+    }
+
+    .btn.primary {
+      background: #2563eb;
+      border-color: #2563eb;
+      color: white;
+    }
+
+    .btn.danger {
+      background: #f97373;
+      border-color: #ef4444;
+      color: white;
+    }
+
+    .btn.outline {
+      background: transparent;
+    }
+
+    .btn:disabled {
+      opacity: 0.6;
+      cursor: default;
+    }
+
+    .info-text {
+      font-size: 13px;
+      color: #4b5563;
+      margin-top: 8px;
+    }
+
+    .mode-label {
+      font-size: 12px;
+      color: #6b7280;
+      margin-top: 4px;
+    }
+
+    .hard-active {
+      background: #fbbf24 !important;
+      border-color: #f59e0b !important;
+      color: #111827 !important;
+    }
+
+    @media (max-width: 480px) {
+      .container {
+        margin: 0;
+        border-radius: 0;
+        min-height: 100vh;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h1>Kelime Quiz</h1>
+    <div class="subtitle">
+      WORDS.js listesinden, karışık sırada, tekrar etmeyen test
+    </div>
+
+    <div class="stats">
+      <div>Toplam: <span id="stat-total">0</span></div>
+      <div>Doğru: <span id="stat-correct">0</span></div>
+      <div>Yanlış: <span id="stat-wrong">0</span></div>
+    </div>
+
+    <div class="question-box">
+      <div class="question-label">İngilizce kelime:</div>
+      <div id="question-text" class="question-text">Yükleniyor…</div>
+      <div class="mode-label">
+        Mod: <span id="mode-label">Tüm kelimeler</span>
+        <span id="remaining-label" class="badge">0 kaldı</span>
+      </div>
+    </div>
+
+    <div id="answers" class="buttons"></div>
+
+    <div class="controls">
+      <button id="btn-next" class="btn primary" disabled>Sonraki soru</button>
+      <button id="btn-mark-hard" class="btn outline">Bu kelime zor ⭐</button>
+      <button id="btn-hard-test" class="btn">Zor + yanlışlardan test</button>
+      <button id="btn-all-test" class="btn">Tüm kelimelerden test</button>
+      <button id="btn-reset" class="btn danger">Her şeyi sıfırla</button>
+    </div>
+
+    <div class="info-text" id="info-text">
+      Cevap verdikten sonra doğru şık yeşil, yanlış şık kırmızı olacaktır.  
+      “Bu kelime zor” ile zor listesine eklenir ve kalıcı olarak saklanır.
+    </div>
+  </div>
+
+  <!-- Önce Word listesi -->
+  <script src="WORDS.js"></script>
+  <!-- Sonra uygulama kodu -->
+  <script src="app.js"></script>
+</body>
+</html>
